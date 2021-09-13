@@ -5,7 +5,7 @@
 ##             are specified here 		   ##
 #####################################################
 
-#SBATCH -J CG_1D_Timer				## job name
+#SBATCH -J Lap_1D_Timer				## job name
 #SBATCH -t 00:10:00					## total computing time
 #SBATCH -N 1						## number of nodes 
 #SBATCH -n 4						## total number of MPI tasks

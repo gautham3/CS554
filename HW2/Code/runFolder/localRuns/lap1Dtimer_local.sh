@@ -1,6 +1,6 @@
 #!/bin/bash
 
-N=500	## Size of 1D data array
+N=8192	## Size of 1D data array
 ntimer=1000	## no. of 1D Lap solves done to avg time
 p=4 	## No. of MPI ranks to use
 

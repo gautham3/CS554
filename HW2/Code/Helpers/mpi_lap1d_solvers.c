@@ -1,7 +1,6 @@
 #ifndef MPI_LAP1D_SOLVERS_C
 #define MPI_LAP1D_SOLVERS_C
 
-#include <mpi.h>
 #include "helpers.c"
 
 
@@ -28,6 +27,16 @@ struct solret {
     int iter;
     float* x;
 };
+
+void create_lap1d_sol(float* usol,float ul,float ur,int N,int n, int offs)
+{
+    float dsol = (ur-ul)/(N-1);
+    usol[0] = ul+offs*dsol;
+    for (int i=1; i<n; i++){
+        usol[i] = usol[i-1]+dsol;
+    }
+    return;
+}
 
 struct solret mpiLap1Dsolve(struct par_dat pmd, float* u, float* u_b, int itermax)
 {
@@ -72,28 +81,54 @@ void lap1D_MPI_timer_output(int ntimer, struct par_dat pmd, float* u, float* u_b
 {
     
     int rank = pmd.rank_d;
+    int numprocs = pmd.nwrks_d;
     int N = pmd.n_d;
     int nwrks = pmd.nwrks_d;
+    int n = pmd.rows_d;
+    int* offsvec = pmd.offsetv_d;
     clock_t beg, end; 
     struct solret sol;
+
+    float ul = u[0];
+    float ur = u[n-1];
+    if (rank==0) {printf("rank:%d, left BC:%f\n",rank, ul); }
+    if (rank==numprocs-1) {printf("rank:%d, right BC:%f\n",rank, ur); }
+    float* usol = create1dZeroVec(n);
+
+
     // Start Timer
     beg = clock();
-        
+
     for(int j=0; j<ntimer; j++){sol = mpiLap1Dsolve(pmd,u,u_b,itermax);}
     u_b = sol.x;
     int iters = sol.iter;
+
     // End timer
     end = clock();
     float t_tot = 1.0*(end-beg)/CLOCKS_PER_SEC;
+
+    //check error in solution
+    communicate_1d_BCs(ul,ur,rank,numprocs);
+    create_lap1d_sol(usol,ul,ur,N,n,offsvec[rank]);
+    //float err =  VecErrNorm(n, u_b, usol); //local vector error
+    float errmax = get1dLapMaxErr(n, rank, u_b, usol); // print global vector error
+
     //Output
     if(rank==0){  
         printf("1D Laplacian solve:- \n");        
         printf("Size : %d on %d ranks\n",N,nwrks);
         printf("iters  %d \n", iters);  
         printf("Total time taken: %f \n", t_tot/ntimer);
+        printf("Solution Error Norm: %f\n",errmax);
         printf("-------------------------------------------------------\n\n");
     }
+    free (usol);
     return;
 }
+
+
+
+
+
 
 #endif

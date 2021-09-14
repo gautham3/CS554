@@ -20,16 +20,13 @@ int main(int argc, char *argv[])
     float* u_b = create1dRandRHS(n);
     float* u = create1dRandRHS(n);
 
-    if (rank==0) {printf("rank:%d, left BC:%f\n",rank, u[0]); }
-    if (rank==numprocs-1) {printf("rank:%d, right BC:%f\n",rank, u[n-1]); }
-    //printf("n:%d, rank:%d\n",n,rank);
-
     // create struct with data for parallel routines
     struct par_dat pmdat = par_struct_assign(offsvec,n,rank,N,numprocs); 
 
+    //time 1D Laplacian solves
     lap1D_MPI_timer_output(ntimer,pmdat,u,u_b,itermax);
 
-    print_vec(n,u_b);
+    //print_vec(n,usol);print_vec(n,u_b);
     free(u_b); free(u);
     MPI_Finalize();
     return 0;

@@ -5,6 +5,7 @@
 #include <stdlib.h>
 #include <math.h>
 #include <time.h>
+#include <mpi.h>
 
 
 float *create1dZeroVec(int n){
@@ -44,6 +45,32 @@ void print_intvec(int n, int* v)
   printf("\n");
 }
 
+float VecErrNorm(int n, float* a, float* b)
+{
+  // Compare the L-infinity norm of sol a w.r.t. exact b
+  float tmp, errnorm; 
+  float max = 0; 
+  float maxb = 0;
+  for (int i=0; i<n; i++)
+  {
+    tmp = fabs(a[i] - b[i]); 
+    max = (tmp>max) ? tmp : max;
+    maxb = (fabs(b[i])>maxb) ? fabs(b[i]) : maxb;
+  }
+  errnorm = max/maxb;
+  //printf("%3f  , %3f , %3f", max,maxb,errnorm);printf("\n  ");
+  return errnorm;      
+}
+
+float* VecAdd( float* a, float* b, float k, int n)
+{
+    float* c = create1dZeroVec(n);           
+    for (int i=0; i<n; i++) {
+            c[i] = a[i] + k*b[i];
+    }       
+    return c;
+}
+
 int* row_load_allot(int n, int ptot)
 {
     int nwrks, offset, avrow, rows, lrow, roweq, rowrem;
@@ -65,6 +92,21 @@ int* row_load_allot(int n, int ptot)
     }
 
     return offsv;
+}
+
+void communicate_1d_BCs(float a,float b, int rank, int p)
+{
+    if (rank==p){ MPI_Bcast(&b, 1, MPI_FLOAT, rank-1, MPI_COMM_WORLD);}
+    if (rank==0){ MPI_Bcast(&a, 1, MPI_FLOAT, 0, MPI_COMM_WORLD);}
+    return;
+}
+
+float get1dLapMaxErr(int n, int rank, float* a, float* b)
+{
+    float err =  VecErrNorm(n, a, b); //local vector error
+    float errmax;
+    MPI_Reduce(&err, &errmax, 1, MPI_FLOAT, MPI_MAX,0, MPI_COMM_WORLD);
+    return errmax;
 }
 
 #endif

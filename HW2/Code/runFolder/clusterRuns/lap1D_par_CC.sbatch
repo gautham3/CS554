@@ -20,7 +20,7 @@
 
 
 ########## Run your executable ######################
-n=8192			## max size of full 1-D problem, timed till here in sizes powers of 2
+n=10			## max size of full 1-D problem, timed till here in sizes powers of 2
 ntimer=1000		## no. of 1D Lap solves done to avg time
 
 module load openmpi

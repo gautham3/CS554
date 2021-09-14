@@ -1,8 +1,8 @@
 #!/bin/bash
 
-N=50	## Size of 1D data array
+N=500	## Size of 1D data array
 ntimer=1000	## no. of 1D Lap solves done to avg time
-p=5 	## No. of MPI ranks to use
+p=4 	## No. of MPI ranks to use
 
 mpicc ../../Drivers/lap1D_par.c -lm -o lap1D_par.exe 
 echo $'lap1D_par.c Compiled with mpicc \n'

@@ -57,6 +57,7 @@ float VecErrNorm(int n, float* a, float* b)
     max = (tmp>max) ? tmp : max;
     maxb = (fabs(b[i])>maxb) ? fabs(b[i]) : maxb;
   }
+  maxb = (maxb==0)? 1: maxb;
   errnorm = max/maxb;
   //printf("%3f  , %3f , %3f", max,maxb,errnorm);printf("\n  ");
   return errnorm;      
